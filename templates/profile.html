@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile - NutriBot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="nb-shell top">
+    <div class="nb-wrap wide">
+      <a href="{{ url_for('menu') }}" class="back-link">&larr; Back</a>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">Account</div>
+            <h1>My Profile</h1>
+          </div>
+        </div>
+        <div class="panel-body">
+          {% with messages = get_flashed_messages() %}
+          {% if messages %}
+          <ul class="flash-list">
+            {% for msg in messages %}
+            <li class="flash">{{ msg }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+          {% endwith %}
+
+          <form method="post">
+            <div class="eyebrow" style="margin-top:0;">Basic Information</div>
+
+            <div class="field-row">
+              <div class="field">
+                <label>Username</label>
+                <input type="text" value="{{ user_name }}" readonly />
+                <div class="field-hint">Username cannot be changed</div>
+              </div>
+              <div class="field">
+                <label>Age</label>
+                <input type="number" value="{{ user.profile.age if user.profile.age }}" readonly />
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label>Height (cm)</label>
+                <input type="number" value="{{ user.profile.height if user.profile.height }}" readonly />
+              </div>
+              <div class="field">
+                <label>Weight (kg)</label>
+                <input type="number" value="{{ user.profile.weight if user.profile.weight }}" readonly />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Gender</label>
+              <input type="text" value="{{ user.profile.gender if user.profile.gender }}" readonly />
+            </div>
+
+            <div class="stat-row">
+              <div class="stat-tile accent-amber">
+                <div class="stat-num">{% if user.profile.bmi %}{{ user.profile.bmi }}{% else %}&ndash;{% endif %}</div>
+                <div class="stat-label">BMI {% if user.profile.bmi_category %}&middot; {{ user.profile.bmi_category }}{% endif %}</div>
+              </div>
+              <div class="stat-tile accent-red">
+                <div class="stat-num">{% if user.profile.daily_calories %}{{ user.profile.daily_calories|int }}{% else %}&ndash;{% endif %}</div>
+                <div class="stat-label">Daily kcal</div>
+              </div>
+            </div>
+
+            <a href="{{ url_for('edit_health') }}" class="btn btn-outline btn-block" style="margin-bottom:22px;">Edit Health Information</a>
+
+            <hr class="rule" />
+
+            <div class="eyebrow">Contact Information (Optional)</div>
+
+            <div class="field">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" name="email" value="{{ user.profile.email if user.profile.email }}" placeholder="your.email@example.com" />
+            </div>
+            <div class="field">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" name="phone" value="{{ user.profile.phone if user.profile.phone }}" placeholder="+65 9123 4567" />
+            </div>
+            <div class="field">
+              <label for="country">Country</label>
+              <input type="text" id="country" name="country" value="{{ user.profile.country if user.profile.country }}" placeholder="Your country" />
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" style="margin-bottom:10px;">Save Changes</button>
+            <a href="{{ url_for('menu') }}" class="btn btn-outline btn-block">Cancel</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Complete Your Profile - NutriBot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="nb-shell">
+    <div class="nb-wrap">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">Step 1 of 1</div>
+            <h1>Complete Your Profile</h1>
+          </div>
+        </div>
+        <div class="panel-body">
+          <p class="muted" style="margin-top:0;">Help us provide better nutrition advice by sharing some basic information.</p>
+
+          {% with messages = get_flashed_messages() %}
+          {% if messages %}
+          <ul class="flash-list">
+            {% for msg in messages %}
+            <li class="flash">{{ msg }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+          {% endwith %}
+
+          <form method="post">
+            <div class="field">
+              <label for="age">Age</label>
+              <input type="number" id="age" name="age" min="1" max="120" required />
+            </div>
+
+            <div class="field">
+              <label for="height">Height (cm)</label>
+              <input type="number" id="height" name="height" min="50" max="250" required />
+            </div>
+
+            <div class="field">
+              <label for="weight">Weight (kg)</label>
+              <input type="number" id="weight" name="weight" min="10" max="300" step="0.1" required />
+            </div>
+
+            <div class="field">
+              <label for="gender">Gender</label>
+              <select id="gender" name="gender" required>
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Complete Setup</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

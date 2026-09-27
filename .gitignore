@@ -1,0 +1,16 @@
+.env
+
+# runtime data / generated state, not source
+db_groceries.json
+static/uploads/*
+!static/uploads/.gitkeep
+
+# OS / editor cruft
+.DS_Store
+static/.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/

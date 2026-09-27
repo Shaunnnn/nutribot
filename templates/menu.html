@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NutriBot - Your Nutrition Assistant</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <script src="{{ url_for('static', filename='chat.js') }}" defer></script>
+</head>
+<body>
+  <div class="nb-shell top">
+    <div class="nb-wrap">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">NutriBot</div>
+            <h1 style="font-size:20px;">Your Nutrition Assistant</h1>
+          </div>
+          <a href="{{ url_for('profile') }}" class="btn btn-icon btn-outline" title="My Profile" aria-label="Go to my profile">&#128100;</a>
+        </div>
+        <div class="panel-body">
+          <div class="stat-row" style="grid-template-columns: repeat(2, 1fr);">
+            <a href="{{ url_for('meals_page') }}" class="stat-tile plain" style="text-decoration:none;">
+              <div class="stat-num">{{ today_calories }}</div>
+              <div class="stat-label">Eaten Today (kcal)</div>
+            </a>
+            <a href="{{ url_for('weekly_summary_page') }}" class="stat-tile plain accent-amber" style="text-decoration:none;">
+              <div class="stat-num">{{ target_calories if target_calories is not none else '–' }}</div>
+              <div class="stat-label">Daily Target (kcal)</div>
+            </a>
+          </div>
+
+          <div class="action-stack" style="margin-bottom: 18px;">
+            <button class="btn btn-primary btn-block" id="startBtn" data-open="false">
+              Start Chatbot Session
+            </button>
+            <a href="{{ url_for('groceries_page') }}" class="btn btn-secondary btn-block">Pantry &amp; Recipes</a>
+            <a href="{{ url_for('meals_page') }}" class="btn btn-outline btn-block">Food Log</a>
+            <a href="{{ url_for('weight_journey') }}" class="btn btn-outline btn-block">Weight Journey</a>
+            <a href="{{ url_for('weekly_summary_page') }}" class="btn btn-outline btn-block">Weekly Insights</a>
+            <a href="{{ url_for('logout') }}" class="btn btn-danger-outline btn-block">Logout</a>
+          </div>
+
+          <section id="chatPanel" style="display:none;">
+            <div class="chat-shell">
+              <div class="chat-toolbar">
+                <button type="button" id="clearChat" class="btn btn-sm btn-outline">Clear</button>
+              </div>
+              <div id="chatbox">
+                <div class="chat-empty">Start a conversation with NutriBot!</div>
+              </div>
+              <div class="chat-input-row">
+                <div class="attach-wrap">
+                  <button type="button" id="attach" class="btn btn-icon" title="Attach a photo" aria-label="Attach a photo">&#128206;</button>
+                  <div class="attach-menu" id="attachMenu">
+                    <button type="button" data-mode="pantry">
+                      Add to pantry
+                      <span class="attach-desc">Groceries or ingredients photo</span>
+                    </button>
+                    <button type="button" data-mode="meal">
+                      Ask about this food
+                      <span class="attach-desc">A meal photo &mdash; NutriBot analyzes it</span>
+                    </button>
+                  </div>
+                  <input type="file" id="imageInput" accept="image/png,image/jpeg" style="display:none" />
+                </div>
+                <input type="text" id="input" placeholder="Ask about nutrition, recipes, or diet..." aria-label="Type your message" />
+                <button id="send" class="btn btn-primary" type="button">Send</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="nb-footer">
+    Built solo &mdash; Flask + OpenAI
+  </footer>
+
+  <script>
+    document.getElementById('startBtn').addEventListener('click', function () {
+      const panel = document.getElementById('chatPanel');
+      const isOpen = panel.style.display !== 'none';
+      panel.style.display = isOpen ? 'none' : 'block';
+      this.textContent = isOpen ? 'Start Chatbot Session' : 'Hide Chatbot';
+    });
+  </script>
+</body>
+</html>

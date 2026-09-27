@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Food Log - NutriBot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="nb-shell top">
+    <div class="nb-wrap wider">
+      <a href="{{ url_for('menu') }}" class="back-link">&larr; Back to Menu</a>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">Food Log</div>
+            <h1>Today's Meals</h1>
+          </div>
+        </div>
+        <div class="panel-body">
+          {% with messages = get_flashed_messages() %}
+          {% if messages %}
+          <ul class="flash-list">
+            {% for msg in messages %}
+            <li class="flash">{{ msg }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+          {% endwith %}
+
+          <div class="stat-row">
+            <div class="stat-tile">
+              <div class="stat-num">{{ total_calories }}</div>
+              <div class="stat-label">Eaten Today (kcal)</div>
+            </div>
+            <div class="stat-tile accent-amber">
+              <div class="stat-num">{{ target_calories if target_calories is not none else '–' }}</div>
+              <div class="stat-label">Daily Target (kcal)</div>
+            </div>
+            <div class="stat-tile {% if remaining_calories is not none and remaining_calories < 0 %}accent-red{% else %}accent-green{% endif %}">
+              <div class="stat-num">{{ remaining_calories if remaining_calories is not none else '–' }}</div>
+              <div class="stat-label">{% if remaining_calories is not none and remaining_calories < 0 %}Over Target (kcal){% else %}Remaining (kcal){% endif %}</div>
+            </div>
+          </div>
+
+          <p class="field-hint" style="margin:-8px 0 18px;">
+            Send a meal photo to NutriBot in chat ("Ask about this food") and it will estimate the calories &mdash; tap "Log it" on the reply to add it here. You can also add a meal by hand below.
+          </p>
+
+          <div class="panel" style="margin-bottom:20px;">
+            <div class="panel-head" style="border-bottom-width: var(--rule-mid);">
+              <h2 style="font-size:15px;">Log a Meal</h2>
+            </div>
+            <div class="panel-body">
+              <form method="post" action="{{ url_for('log_meal') }}" id="logMealForm">
+                <div class="field-row">
+                  <div class="field">
+                    <label>What did you eat?</label>
+                    <input type="text" name="description" id="mealDescription" placeholder="e.g. Chicken rice" required />
+                  </div>
+                  <div class="field">
+                    <label>Calories (optional)</label>
+                    <div style="display:flex; gap:6px;">
+                      <input type="number" name="calories" id="mealCalories" min="0" step="1" placeholder="e.g. 550" style="flex:1;" />
+                      <button type="button" id="estimateCalories" class="btn btn-sm btn-outline" style="white-space:nowrap;">Estimate</button>
+                    </div>
+                    <small class="field-hint" id="estimateStatus"></small>
+                  </div>
+                </div>
+                <input type="hidden" name="calories_estimated" id="caloriesEstimated" value="" />
+                <button type="submit" class="btn btn-primary">Log Meal</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="eyebrow">Today's Entries</div>
+          {% if meals %}
+          <table class="nb-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Meal</th>
+                <th>Calories</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for meal in meals %}
+              <tr>
+                <td>{{ meal.time }}</td>
+                <td>
+                  {{ meal.description }}
+                  {% if meal.source == 'photo' %}<span class="field-hint">(from photo)</span>{% endif %}
+                </td>
+                <td>
+                  {{ meal.calories if meal.calories is not none else '–' }}
+                  {% if meal.calories_estimated %}<span class="field-hint">(averaged)</span>{% endif %}
+                </td>
+                <td style="text-align:right;">
+                  <form action="{{ url_for('delete_meal', meal_id=meal.id) }}" method="POST" style="display:inline; margin:0;">
+                    <button class="btn btn-sm btn-icon" onclick="return confirm('Remove this meal entry?');">&#128465;</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="muted">No meals logged today yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const descInput = document.getElementById("mealDescription");
+      const calInput = document.getElementById("mealCalories");
+      const estimateBtn = document.getElementById("estimateCalories");
+      const estimatedFlag = document.getElementById("caloriesEstimated");
+      const status = document.getElementById("estimateStatus");
+
+      estimateBtn.addEventListener("click", async function () {
+        const description = descInput.value.trim();
+        if (!description) {
+          status.textContent = "Type what you ate first.";
+          return;
+        }
+        status.textContent = "Estimating...";
+        estimateBtn.disabled = true;
+        try {
+          const res = await fetch("/estimate_calories", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ description: description }),
+          });
+          const data = await res.json();
+          if (data.calories) {
+            calInput.value = data.calories;
+            estimatedFlag.value = "1";
+            status.textContent = "Average estimate filled in — edit it if you know better.";
+          } else {
+            status.textContent = "Couldn't estimate that one — enter calories by hand.";
+          }
+        } catch (err) {
+          console.error(err);
+          status.textContent = "Couldn't estimate that one — enter calories by hand.";
+        } finally {
+          estimateBtn.disabled = false;
+        }
+      });
+
+      // If the user edits the calories field themselves after an estimate
+      // was filled in, it's no longer purely the average — clear the flag.
+      calInput.addEventListener("input", function () {
+        estimatedFlag.value = "";
+        status.textContent = "";
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weekly Insights - NutriBot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="nb-shell top">
+    <div class="nb-wrap">
+      <a href="{{ url_for('menu') }}" class="back-link">&larr; Back to Menu</a>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">This Week</div>
+            <h1 style="font-size:20px;">Weekly Insights</h1>
+          </div>
+        </div>
+        <div class="panel-body">
+          {% with messages = get_flashed_messages() %}
+          {% if messages %}
+          <ul class="flash-list">
+            {% for msg in messages %}
+            <li class="flash">{{ msg }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+          {% endwith %}
+
+          <div class="stat-row" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="stat-tile {% if stats.weight_change is not none and stats.weight_change < 0 %}accent-green{% elif stats.weight_change is not none and stats.weight_change > 0 %}accent-red{% endif %}">
+              <div class="stat-num">{{ stats.weight_change if stats.weight_change is not none else '–' }}</div>
+              <div class="stat-label">Weight Change (kg)</div>
+            </div>
+            <div class="stat-tile">
+              <div class="stat-num">{{ stats.avg_calories if stats.avg_calories is not none else '–' }}</div>
+              <div class="stat-label">Avg kcal / Day</div>
+            </div>
+            <div class="stat-tile accent-amber">
+              <div class="stat-num">{{ stats.days_logged }}</div>
+              <div class="stat-label">Days Logged</div>
+            </div>
+          </div>
+
+          <div class="callout">
+            <div class="eyebrow">NutriBot's Check-In</div>
+            <p style="margin:0; white-space:pre-line;">{{ stats.summary_text }}</p>
+          </div>
+
+          <div class="action-stack">
+            <a href="{{ url_for('meals_page') }}" class="btn btn-outline btn-block">Log a Meal</a>
+            <a href="{{ url_for('weight_journey') }}" class="btn btn-outline btn-block">Log Weight</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

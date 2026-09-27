@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Pantry - NutriBot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="nb-shell top">
+    <div class="nb-wrap wider">
+      <a href="{{ url_for('menu') }}" class="back-link">&larr; Back to NutriBot</a>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">Pantry</div>
+            <h1>Ingredients &amp; Photos</h1>
+          </div>
+        </div>
+        <div class="panel-body">
+          {% with messages = get_flashed_messages() %}
+          {% if messages %}
+          <ul class="flash-list">
+            {% for msg in messages %}
+            <li class="flash">{{ msg }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+          {% endwith %}
+
+          <div class="eyebrow">Current Ingredients</div>
+          {% if groceries %}
+          <ul class="ingredient-list">
+            {% for g in groceries %}
+            <li>
+              <span>
+                {{ g["name"] }}
+                {% if g.get("quantity") %}<span class="muted">&mdash; {{ g["quantity"] }}{% if g.get("unit") %} {{ g["unit"] }}{% endif %}</span>{% endif %}
+              </span>
+              <span style="display:flex; align-items:center; gap:10px;">
+                <small class="muted">{{ g["added_at"] }}</small>
+                <form action="{{ url_for('delete_grocery', item_id=g.id) }}" method="POST" style="display:inline; margin:0;">
+                  <button class="btn btn-sm btn-icon" onclick="return confirm('Delete this ingredient?');">&#128465;</button>
+                </form>
+              </span>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="muted">No ingredients yet. Upload a photo first.</p>
+          {% endif %}
+
+          <form method="post" action="{{ url_for('add_grocery') }}" style="margin-bottom:16px;">
+            <div class="field-row">
+              <div class="field" style="margin-bottom:10px;">
+                <label>Add Ingredient</label>
+                <input type="text" name="name" placeholder="e.g. Brown rice" required />
+              </div>
+              <div class="field" style="margin-bottom:10px;">
+                <label>Quantity</label>
+                <input type="text" name="quantity" placeholder="e.g. 2" />
+              </div>
+              <div class="field" style="margin-bottom:10px;">
+                <label>Unit</label>
+                <input type="text" name="unit" placeholder="e.g. cups" />
+              </div>
+            </div>
+            <button type="submit" class="btn btn-outline btn-sm">Add to Pantry</button>
+          </form>
+
+          <button type="button" id="suggestRecipesBtn" class="btn btn-secondary btn-block" style="margin-bottom:10px;">
+            What Can I Cook?
+          </button>
+          <div id="recipeResult" style="display:none; margin-bottom:20px;" class="callout">
+            <div class="eyebrow">Recipe Ideas</div>
+            <p id="recipeText" style="margin:0; white-space:pre-line;"></p>
+          </div>
+
+          <hr class="rule" />
+
+          <div class="eyebrow">Uploaded Images</div>
+          {% if images %}
+          <div class="card-grid">
+            {% for img in images %}
+            <div class="grocery-img-card">
+              <img src="/{{ img['image_path'] }}" alt="Uploaded pantry photo" />
+              <div class="tile-body">
+                <span>{{ ', '.join(img['detected_items']) }}</span>
+                <form action="{{ url_for('delete_image', image_id=img['id']) }}" method="POST" style="margin:0;">
+                  <button class="btn btn-sm btn-icon" onclick="return confirm('Delete this image and its ingredients?');">&#128465;</button>
+                </form>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="muted">No images uploaded yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var btn = document.getElementById('suggestRecipesBtn');
+      var resultBox = document.getElementById('recipeResult');
+      var resultText = document.getElementById('recipeText');
+      if (!btn) return;
+
+      btn.addEventListener('click', async function () {
+        btn.disabled = true;
+        var originalText = btn.textContent;
+        btn.textContent = 'Thinking...';
+        try {
+          var res = await fetch('{{ url_for("suggest_recipes_route") }}', { method: 'POST' });
+          var data = await res.json();
+          resultText.textContent = data.reply || "Couldn't come up with anything just now — try again in a moment.";
+          resultBox.style.display = 'block';
+        } catch (err) {
+          resultText.textContent = "Couldn't reach the recipe generator just now — try again in a moment.";
+          resultBox.style.display = 'block';
+        }
+        btn.disabled = false;
+        btn.textContent = originalText;
+      });
+    })();
+  </script>
+</body>
+</html>

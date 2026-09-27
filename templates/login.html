@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - NutriBot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="nb-shell">
+    <div class="nb-wrap">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">NutriBot</div>
+            <h1>Log In</h1>
+          </div>
+        </div>
+        <div class="panel-body">
+          {% with messages = get_flashed_messages() %}
+          {% if messages %}
+          <ul class="flash-list">
+            {% for msg in messages %}
+            <li class="flash">{{ msg }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+          {% endwith %}
+
+          <form method="post" action="{{ url_for('login') }}">
+            <div class="field">
+              <label for="user_name">Username</label>
+              <input type="text" id="user_name" name="user_name" required />
+            </div>
+            <div class="field">
+              <label for="password">Password</label>
+              <input type="password" id="password" name="password" required />
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Log In</button>
+          </form>
+          <hr class="rule thin" />
+          <p style="text-align:center; font-size:14px; margin:0;">
+            <a href="{{ url_for('signup') }}">Need an account? Sign up</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

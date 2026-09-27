@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Weight Journey - NutriBot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="nb-shell top">
+    <div class="nb-wrap wider">
+      <a href="{{ url_for('menu') }}" class="back-link">&larr; Back to Menu</a>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">Progress</div>
+            <h1>My Weight Journey</h1>
+          </div>
+        </div>
+        <div class="panel-body">
+          {% with messages = get_flashed_messages() %}
+          {% if messages %}
+          <ul class="flash-list">
+            {% for msg in messages %}
+            <li class="flash">{{ msg }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+          {% endwith %}
+
+          <div class="stat-row">
+            <div class="stat-tile">
+              <div class="stat-num">{{ current_weight }}</div>
+              <div class="stat-label">Current (kg)</div>
+            </div>
+            <div class="stat-tile accent-amber">
+              <div class="stat-num">{{ target_weight }}</div>
+              <div class="stat-label">Target (kg)</div>
+            </div>
+            <div class="stat-tile accent-green">
+              <div class="stat-num">{{ weight_to_go }}</div>
+              <div class="stat-label">To Go (kg)</div>
+            </div>
+          </div>
+
+          {% if user.profile.goal %}
+          <div class="callout">
+            <div class="eyebrow">Current Goal</div>
+            <p style="margin:0;">
+              {% if user.profile.goal == 'lose' %}
+              Lose Weight: from {{ current_weight }} kg to {{ target_weight }} kg ({{ abs(weight_to_go) }} kg to lose)
+              {% elif user.profile.goal == 'gain' %}
+              Gain Weight: from {{ current_weight }} kg to {{ target_weight }} kg ({{ weight_to_go }} kg to gain)
+              {% else %}
+              Maintain Weight: around {{ target_weight }} kg
+              {% endif %}
+            </p>
+            {% if user.goals.weekly_target %}
+            <small class="muted">Recommended weekly rate: {{ user.goals.weekly_target }} kg/week</small>
+            {% endif %}
+          </div>
+          {% endif %}
+
+          <div class="eyebrow">Progress Chart</div>
+          <div style="position:relative; height:280px; border:var(--rule-mid) solid var(--line); padding:10px; margin-bottom:20px;">
+            <canvas id="weightChart"></canvas>
+          </div>
+          <div id="noDataMessage" class="flash" style="display:none; margin-top:-10px; margin-bottom:20px;">
+            No weight data yet. Log your first weight to see your progress chart!
+          </div>
+
+          <div class="panel" style="margin-bottom:20px;">
+            <div class="panel-head" style="border-bottom-width: var(--rule-mid);">
+              <h2 style="font-size:15px;">Log Today's Weight</h2>
+            </div>
+            <div class="panel-body">
+              <form method="post" action="{{ url_for('log_weight') }}">
+                <div class="field-row">
+                  <div class="field">
+                    <label>Weight (kg)</label>
+                    <input type="number" name="weight" step="0.1" min="30" max="300" required />
+                  </div>
+                  <div class="field">
+                    <label>Notes (optional)</label>
+                    <input type="text" name="notes" placeholder="e.g. after workout" />
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Log Weight</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="eyebrow">Recent Weigh-Ins</div>
+          {% if recent_entries %}
+          <table class="nb-table" style="margin-bottom:20px;">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Weight</th>
+                <th>Change</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for entry in recent_entries %}
+              <tr>
+                <td>{{ entry.date }}</td>
+                <td>{{ entry.weight }} kg</td>
+                <td>
+                  {% if entry.change is defined %}
+                  {% set change_amount = entry.change|abs %}
+                  {% if entry.change_is_good is defined %}
+                  {% if entry.change_is_good %}
+                  <span class="trend-down">{{ change_amount }} kg &darr;</span>
+                  {% else %}
+                  <span class="trend-up">{{ change_amount }} kg &uarr;</span>
+                  {% endif %}
+                  {% else %}
+                  <span class="{% if entry.change > 0 %}trend-up{% else %}trend-down{% endif %}">
+                    {{ change_amount }} kg {% if entry.change > 0 %}&uarr;{% else %}&darr;{% endif %}
+                  </span>
+                  {% endif %}
+                  {% else %}
+                  <span class="muted">-</span>
+                  {% endif %}
+                </td>
+                <td>{{ entry.notes }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="muted">No weight entries yet. Log your first weight above!</p>
+          {% endif %}
+
+          {% if milestones %}
+          <div class="eyebrow">Achievements Unlocked</div>
+          <div class="card-grid">
+            {% for milestone in milestones %}
+            <div class="tile-card">
+              <div class="tile-icon">&#127942;</div>
+              <h6>{{ milestone.title }}</h6>
+              <small>{{ milestone.description }}</small>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const canvas = document.getElementById('weightChart');
+      if (!canvas) { console.error("Canvas element not found!"); return; }
+      const ctx = canvas.getContext('2d');
+
+      try {
+        const chartDates = JSON.parse('{{ chart_dates_json|safe }}');
+        const chartWeights = JSON.parse('{{ chart_weights_json|safe }}');
+
+        if (!chartDates || !chartWeights || chartDates.length === 0) {
+          document.getElementById('noDataMessage').style.display = 'block';
+          canvas.style.display = 'none';
+          return;
+        }
+
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: chartDates,
+            datasets: [{
+              label: 'Weight (kg)',
+              data: chartWeights,
+              borderColor: '#c1442d',
+              backgroundColor: 'rgba(193, 68, 45, 0.08)',
+              borderWidth: 2,
+              pointRadius: 4,
+              pointBackgroundColor: '#1a1814',
+              tension: 0.15
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: false, title: { display: true, text: 'Weight (kg)' } }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+      } catch (error) {
+        console.error("Error creating chart:", error);
+        document.getElementById('noDataMessage').style.display = 'block';
+        canvas.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
