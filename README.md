@@ -43,49 +43,49 @@ The app runs at `http://127.0.0.1:5000`.
 
 New here? Sign up; returning users log in with their username and password.
 
-![Login](docs/screenshots/login.png)
+<img src="docs/screenshots/login.jpg" width="560" alt="Login">
 
 ### Dashboard
 
 Today's calories against your daily target, plus quick links to every part of the app.
 
-![Dashboard](docs/screenshots/dashboard.png)
+<img src="docs/screenshots/dashboard.jpg" width="560" alt="Dashboard">
 
 ### Chat assistant
 
 Ask nutrition questions, or attach a photo to ask about a specific meal — NutriBot estimates the dish and calories, then asks whether to log it (so it never assumes you're eating just because you're curious).
 
-![Chat](docs/screenshots/chat.png)
+<img src="docs/screenshots/chat.jpg" width="560" alt="Chat">
 
 ### Pantry & recipes
 
 Track ingredients on hand (manually or via photo upload), and generate recipe ideas from what's already in the pantry.
 
-![Pantry](docs/screenshots/pantry.png)
+<img src="docs/screenshots/pantry.jpg" width="560" alt="Pantry">
 
 ### Food log
 
 Log meals by hand — with an optional GPT calorie estimate (flagged as "averaged" so it's never confused with a measured value) — or from a confirmed chat photo. See today's total, target, and how much you have left.
 
-![Food log](docs/screenshots/food-log.png)
+<img src="docs/screenshots/food-log.jpg" width="560" alt="Food log">
 
 ### Weight journey
 
 Log weight over time, see a trend chart and progress toward your goal weight, and unlock milestones as you go.
 
-![Weight journey](docs/screenshots/weight-journey.png)
+<img src="docs/screenshots/weight-journey.jpg" width="560" alt="Weight journey">
 
 ### Weekly insights
 
 A rolling summary of your weight change and average daily calories, with a short GPT-phrased check-in.
 
-![Weekly insights](docs/screenshots/weekly-insights.png)
+<img src="docs/screenshots/weekly-insights.jpg" width="560" alt="Weekly insights">
 
 ### Profile
 
 Basic info, BMI, and daily calorie target, plus optional contact details.
 
-![Profile](docs/screenshots/profile.png)
+<img src="docs/screenshots/profile.jpg" width="560" alt="Profile">
 
 ## Tech stack
 
