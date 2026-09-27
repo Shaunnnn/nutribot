@@ -5,3 +5,4 @@ scipy==1.12.0
 nltk==3.9.2
 openai==2.8.1
 dotenv==0.9.9
+gunicorn==22.0.0

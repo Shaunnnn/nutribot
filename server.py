@@ -1486,4 +1486,6 @@ def check_milestones(user):
 
 # Run Main
 if __name__ == "__main__":
-    app.run(debug=True)
+    # debug mode is off unless explicitly enabled (FLASK_DEBUG=1 in .env) -
+    # Flask's debugger allows remote code execution if left on in production
+    app.run(debug=os.environ.get("FLASK_DEBUG") == "1")
