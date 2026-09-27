@@ -1,5 +1,7 @@
 # NutriBot
 
+**[Live Demo →](https://nutribot-7l26.onrender.com/)**
+
 A nutrition assistant chatbot built with Flask and OpenAI — started as a hackathon project, now a solo build. Track meals and calories, manage a pantry, get recipe ideas from what's already on hand, log your weight, and get a weekly check-in, all backed by a GPT-powered chat assistant.
 
 ## Features
